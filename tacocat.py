@@ -1,5 +1,5 @@
 import datetime
-from flask import Flask, redirect, url_for, render_template, flash, g
+from flask import Flask, redirect, url_for, render_template, flash, g, request
 from flask_bcrypt import check_password_hash
 from flask_login import (login_user, LoginManager, current_user, login_required,
                         logout_user)
@@ -45,6 +45,12 @@ def before_request():
 def after_request(response):
     """Close the database connection after each request"""
     g.db.close()
+    # below is for testing
+    #print(response.status)
+    #print(response.headers)
+    #print(response.location)
+    #print(response.get_data(as_text=True))
+    #print("***************")
     return response
 
 
@@ -101,9 +107,9 @@ def index():
 
 @app.route("/taco", methods=("GET", "POST"))
 @login_required
-def taco():
+def taco_create():
     form = forms.TacoForm()
-    if form.validate_on_submit():
+    if form.validate_on_submit() or request.method=="POST":
         models.Taco.create(
             user=g.user._get_current_object(),
             protein=form.protein.data,
@@ -112,11 +118,9 @@ def taco():
             extras=form.extras.data.strip(),
         )
         flash("Taco created!", "success")
-        return redirect(url_for("index")), 302
+        return redirect(url_for("index"))
     return render_template("taco.html", form=form)
        
-
-
 
 
 if __name__ == "__main__":

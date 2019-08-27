@@ -30,7 +30,7 @@ class Taco(Model):
     protein = CharField()
     shell = CharField()
     cheese = BooleanField()
-    extras = CharField(max_length=100)
+    extras = CharField()
 
     class Meta:
         database = DATABASE
