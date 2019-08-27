@@ -1,9 +1,10 @@
-from flask_bcrypt import generate_password_hash
+from flask_bcrypt import generate_password_hash 
+from flask_login import UserMixin
 from peewee import *
 
 DATABASE = SqliteDatabase("tacosocial.db")
 
-class User(Model):
+class User(UserMixin, Model):
     email = CharField(unique=True)
     password = CharField()
     is_admin = BooleanField(default=False)
@@ -20,29 +21,14 @@ class User(Model):
                     password=generate_password_hash(password),
                 )
         except IntegrityError:
-            raise ValueError("This email has already been used!")
-        except ValueError as err:
-            pass
+            raise ValueError("Duplicate user error!")
 
 
 
 class Taco(Model):
-    PROTEIN_CHOICES = (
-        ("chicken", "chicken"),
-        ("beef", "beef"),
-        ("fish", "fish")
-    )
-    SHELL_CHOICES = (
-        ("hard", "hard"),
-        ("soft", "soft")
-    )
     user = ForeignKeyField(rel_model=User, related_name="tacos")
-    protein = CharField(
-        choices=PROTEIN_CHOICES, 
-    )
-    shell = CharField(
-        choices=SHELL_CHOICES,
-    )
+    protein = CharField()
+    shell = CharField()
     cheese = BooleanField()
     extras = CharField(max_length=100)
 
@@ -53,5 +39,5 @@ class Taco(Model):
 
 def initialize_database():
     DATABASE.connect()
-    DATABASE.create_tables([User], safe=True)
+    DATABASE.create_tables([User, Taco], safe=True)
     DATABASE.close()
